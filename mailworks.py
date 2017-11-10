@@ -4,6 +4,8 @@ import requests
 import os
 import smtplib
 import getpass
+from itertools import *
+from bs4 import BeautifulSoup
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
@@ -35,7 +37,7 @@ def getEmailsPDF(fileinput,fileoutput):#get emails from PDF
 def getEmailsWeb(url,fileoutput):#get emails from website
 
 	extract_emails = []
-	client = requests.session()
+	client = requests.session()#requests.session().get(linez).content
 	page = client.get(url)
 	page_parsed = page.content
 	emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', page_parsed)))#seaching for email addresses
@@ -47,6 +49,100 @@ def getEmailsWeb(url,fileoutput):#get emails from website
 	print Fore.MAGENTA + Style.BRIGHT +"****Webite Emails Extracted...see %s***"%fileoutput
 	return extract_emails
 
+def RAGEgetEmailsWeb(url,fileoutput):#get emails from website
+	print Fore.MAGENTA + Style.BRIGHT + """
+
+______________$$$$$$$$$$____________________
+_____________$$__$_____$$$$$________________
+_____________$$_$$__$$____$$$$$$$$__________
+____________$$_$$__$$$$$________$$$_________
+___________$$_$$__$$__$$_$$$__$$__$$________
+___________$$_$$__$__$$__$$$$$$$$__$$_______
+____________$$$$$_$$_$$$_$$$$$$$$_$$$_______
+_____________$$$$$$$$$$$$$_$$___$_$$$$______
+________________$$_$$$______$$$$$_$$$$______
+_________________$$$$_______$$$$$___$$$_____
+___________________________$$_$$____$$$$____
+___________________________$$_$$____$$$$$___
+__________________________$$$$$_____$$$$$$__
+_________________________$__$$_______$$$$$__
+________________________$$$_$$________$$$$$_
+________________________$$$___________$$$$$_
+_________________$$$$___$$____________$$$$$$
+__$$$$$$$$____$$$$$$$$$$_$____________$$$_$$
+_$$$$$$$$$$$$$$$______$$$$$$$___$$____$$_$$$
+$$________$$$$__________$_$$$___$$$_____$$$$
+$$______$$$_____________$$$$$$$$$$$$$$$$$_$$
+$$______$$_______________$$_$$$$$$$$$$$$$$$_
+$$_____$_$$$$$__________$$$_$$$$$$$$$$$$$$$_
+$$___$$$__$$$$$$$$$$$$$$$$$__$$$$$$$$$$$$$__
+$$_$$$$_____$$$$$$$$$$$$________$$$$$$__$___
+$$$$$$$$$$$$$$_________$$$$$______$$$$$$$___
+$$$$_$$$$$______________$$$$$$$$$$$$$$$$____
+$$__$$$$_____$$___________$$$$$$$$$$$$$_____
+$$_$$$$$$$$$$$$____________$$$$$$$$$$_______
+$$_$$$$$$$hg$$$____$$$$$$$$__$$$____________
+$$$$__$$$$$$$$$$$$$$$$$$$$$$$$______________
+$$_________$$$$$$$$$$$$$$$__________________
+"""
+	extract_emails = []
+	dumpdata = []
+	cleandata = []
+	finaldata = []
+	if url.startswith("http://"):
+		if url.split("/")[2].split(".")[0] == "www":
+			surl = url.split("/")[2].split(".")[1]#example
+		afull = url.split("/")[2]#www.example.com
+		durl = "http://" + url.split("/")[2]#http://www.example.com
+	elif url.startswith("https://"):
+		if url.split("/")[2].split(".")[0] == "www":
+			surl = url.split("/")[2].split(".")[1] #example
+		afull = url.split("/")[2] #www.example.com
+		durl = "https://" + url.split("/")[2] #https://www.example.com
+	else:
+		surl = url.split(".")[0]
+		afull = url
+		durl = url
+	try:
+		r  = requests.get(durl)
+	except:
+		print "could not get URL!"
+		return
+	data = r.text
+	soup = BeautifulSoup(data, "lxml")
+	try:
+		for link in soup.find_all('a'):
+			dumpdata.append(str(link.get("href")))
+	except:
+		pass
+	for line in dumpdata:
+		if surl in line:
+			cleandata.append(line.strip())
+	for linee in dumpdata:
+		if linee.startswith("/"):
+			cleandata.append(durl + linee.strip())
+	for lined in dumpdata:
+		if lined.startswith("#"):
+			cleandata.append(durl + lined.strip())
+	for linef in dumpdata:
+		if linef.startswith("?"):
+			cleandata.append(durl + linef.strip())
+	cleandata.append(url)
+	client = requests.session()
+	for test in cleandata:
+		if not test.startswith("ftp"):
+			finaldata.append(test)
+	for linez in finaldata:
+		print linez
+		emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', requests.session().get(linez).content)))
+		for email in emails:
+			extract_emails.append(str(email))
+		for email in emails:
+			file1 = open(fileoutput, 'a+')
+			file1.write(str(email) + "\n")
+			file1.close()
+	print Fore.MAGENTA + Style.BRIGHT +"****Webite Emails Extracted...see %s***"%fileoutput
+	return extract_emails
 
 def sendEmails(email):#send emails using Gmail
 
@@ -92,7 +188,7 @@ while True:
         \/     \/              \/                   \/     \/ 
 
 """
-	choice1 = raw_input("\nPlease input \"w\" to extract from a website, \"f\" for a PDF file, or \"q\" for quit?  ")
+	choice1 = raw_input("\nPlease input \"w\" to extract from a website, \"f\" for a PDF file, \"r\" to rape and pillage a webite or \"q\" for quit?  ")
 	input = choice1.lower()
 	if input == 'w':
 		print Fore.MAGENTA + Style.BRIGHT +"\nYou chose to pull from webiste.\n"
@@ -112,6 +208,30 @@ while True:
 		got_emails = getEmailsPDF(fileinput,output)
 		sendEmails(got_emails)
 		break
+	elif input == 'r':
+		print Fore.MAGENTA + Style.BRIGHT + """
+_______________ _______________________ ________   
+\__    ___/    |   \______   \______   \\_____  \  
+  |    |  |    |   /|       _/|    |  _/ /   |   \ 
+  |    |  |    |  / |    |   \|    |   \/    |    \
+
+  |____|  |______/  |____|_  /|______  /\_______  /
+                           \/        \/         \/ 
+_____________________    _____    _______   ____  __.
+\_   _____/\______   \  /  _  \   \      \ |    |/ _|
+ |    __)   |       _/ /  /_\  \  /   |   \|      <  
+ |     \    |    |   \/    |    \/    |    \    |  \ 
+ \___  /    |____|_  /\____|__  /\____|__  /____|__ \
+
+     \/            \/         \/         \/        \/ 
+"""
+		print Fore.MAGENTA + Style.NORMAL +"\nYou chose to blast a website for all emails with " + Style.BRIGHT + "zero fucks.\n"
+		url = raw_input("Enter a URL to grab emails (e.g., google.com, no http or www): ")
+		output_path = raw_input("Please chose a output file location (e.g., C:\Users\<user>\Documents\): ")
+		output_filename = raw_input("Please chose a file name (e.g., emails.txt): ")
+		output = os.path.join(output_path,output_filename)
+		got_emails = RAGEgetEmailsWeb(url,output)
+#		sendEmails(got_emails)
 	elif input == 'q':
 		break
 	else:
