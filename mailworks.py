@@ -1,7 +1,9 @@
 import PyPDF2
 import re
 import requests
+import random
 import os
+import time
 import smtplib
 import getpass
 from itertools import *
@@ -50,7 +52,7 @@ def getEmailsWeb(url,fileoutput):#get emails from website
 	return extract_emails
 
 def RAGEgetEmailsWeb(url,fileoutput):#get emails from website
-	print Fore.MAGENTA + Style.BRIGHT + """
+	picz = """
 
 ______________$$$$$$$$$$____________________
 _____________$$__$_____$$$$$________________
@@ -85,10 +87,8 @@ $$_$$$$$$$hg$$$____$$$$$$$$__$$$____________
 $$$$__$$$$$$$$$$$$$$$$$$$$$$$$______________
 $$_________$$$$$$$$$$$$$$$__________________
 """
+#	print Fore.MAGENTA + Style.BRIGHT + picz
 	extract_emails = []
-	dumpdata = []
-	cleandata = []
-	finaldata = []
 	if url.startswith("http://"):
 		if url.split("/")[2].split(".")[0] == "www":
 			surl = url.split("/")[2].split(".")[1]#example
@@ -108,39 +108,76 @@ $$_________$$$$$$$$$$$$$$$__________________
 	except:
 		print "could not get URL!"
 		return
-	data = r.text
-	soup = BeautifulSoup(data, "lxml")
-	try:
-		for link in soup.find_all('a'):
-			dumpdata.append(str(link.get("href")))
-	except:
-		pass
-	for line in dumpdata:
-		if surl in line:
-			cleandata.append(line.strip())
-	for linee in dumpdata:
-		if linee.startswith("/"):
-			cleandata.append(durl + linee.strip())
-	for lined in dumpdata:
-		if lined.startswith("#"):
-			cleandata.append(durl + lined.strip())
-	for linef in dumpdata:
-		if linef.startswith("?"):
-			cleandata.append(durl + linef.strip())
-	cleandata.append(url)
-	client = requests.session()
-	for test in cleandata:
-		if not test.startswith("ftp"):
-			finaldata.append(test)
-	for linez in finaldata:
-		print linez
-		emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', requests.session().get(linez).content)))
+	def parseSITE(self):
+		dumpdata = []
+		cleandata = []
+		finaldata = []
+		efinaldata = []
+		eefinaldata = []
+		data = self#r.text
+		soup = BeautifulSoup(data, "lxml")
+		try:
+			for link in soup.find_all('a'):
+				dumpdata.append(str(link.get("href")))
+		except:
+			pass
+		for line in dumpdata:
+			if surl in line:
+				cleandata.append(line.strip())
+		for linee in dumpdata:
+			if linee.startswith("/"):
+				cleandata.append(durl + linee.strip())
+		for lined in dumpdata:
+			if lined.startswith("#"):
+				cleandata.append(durl + lined.strip())
+		for linef in dumpdata:
+			if linef.startswith("?"):
+				cleandata.append(durl + linef.strip())
+#		cleandata.append(url)
+		client = requests.session()
+		for test in cleandata:
+			if not test.startswith("ftp"):
+				finaldata.append(test)
+		for testddd in finaldata:
+			if not testddd.endswith("pdf"):
+				efinaldata.append(testddd)
+		for testccc in efinaldata:
+			if testccc.startswith("http"):
+				eefinaldata.append(testccc)
+		return eefinaldata
+	postfunction = parseSITE(r.text)
+	urllist = []
+#	foo = ['DOING CURLS!!!!', 'CRUSHING BANDWIDTH!!!', 'PILLAGING SITE!!!!']
+	for bine in postfunction:
+#		print(random.choice(foo))
+		os.system("clear")
+#		time.sleep(.5)
+		print Fore.MAGENTA + Style.BRIGHT + picz
+		print "FLEXING IN PROGRESS!!!"
+		test = parseSITE(requests.get(bine).text)
+		for liiine in test:
+			if liiine not in urllist:
+				urllist.append(liiine)
+	freshemail = []
+	os.system("clear")
+	print "********************************************"
+	print "REPS COMPLETE! EXTRACTING EMAILS FROM LINKS!"
+	print "********************************************"
+	for linezz in urllist:
+		print linezz
+		try:
+			emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', requests.session().get(linezz).content)))
+		except:
+			print "COULD NOT RETRIEVE FROM LINK, NEED TO HIT THE GYM MORE!"
+			pass
+#		for email in emails:
+#			extract_emails.append(str(email))
 		for email in emails:
-			extract_emails.append(str(email))
-		for email in emails:
-			file1 = open(fileoutput, 'a+')
-			file1.write(str(email) + "\n")
-			file1.close()
+			if email not in freshemail:
+				freshemail.append(email)
+				file1 = open(fileoutput, 'a+')
+				file1.write(str(email) + "\n")
+				file1.close()
 	print Fore.MAGENTA + Style.BRIGHT +"****Webite Emails Extracted...see %s***"%fileoutput
 	return extract_emails
 
