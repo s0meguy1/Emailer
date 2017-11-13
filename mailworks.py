@@ -15,7 +15,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from colorama import Fore, Back, Style
 from colorama import init 
-
+freshemail = []
 urllist = []
 def getEmailsPDF(fileinput,fileoutput):#get emails from PDF
 
@@ -54,8 +54,10 @@ def getEmailsWeb(url,fileoutput):#get emails from website
 	return extract_emails
 
 def RAGEgetEmailsWeb(url,fileoutput):#get emails from website
-	pool_size = 50 # your "parallelness - needs to be double the amount of coins"
+	pool_size = 50 # max thread count
+	zpool_size = 100
 	pool = Pool(pool_size)
+	zpool = Pool(zpool_size)
 	picz = """
 
 ______________$$$$$$$$$$____________________
@@ -99,7 +101,8 @@ $$_________$$$$$$$$$$$$$$$__________________
 			except:
 				print "Error parsing URL!"
 				return
-		surl = url.split("/")[2].split(".")[0]
+		else:
+			surl = url.split("/")[2].split(".")[0]
 		afull = url.split("/")[2]#www.example.com
 		durl = "http://" + url.split("/")[2]#http://www.example.com
 	elif url.startswith("https://"):
@@ -109,6 +112,8 @@ $$_________$$$$$$$$$$$$$$$__________________
 			except:
 				print "Error parsing URL!"
 				return
+		else:
+			surl = url.split("/")[2].split(".")[0]
 		afull = url.split("/")[2] #www.example.com
 		durl = "https://" + url.split("/")[2] #https://www.example.com
 	else:
@@ -144,10 +149,10 @@ $$_________$$$$$$$$$$$$$$$__________________
 				cleandata.append(durl + linee.strip())
 		for lined in dumpdata:
 			if lined.startswith("#"):
-				cleandata.append(durl + lined.strip())
+				cleandata.append(durl + "/" + lined.strip())
 		for linef in dumpdata:
 			if linef.startswith("?"):
-				cleandata.append(durl + linef.strip())
+				cleandata.append(durl + "/" + linef.strip())
 		client = requests.session()
 		for test in cleandata:
 			if not test.startswith("ftp"):
@@ -165,37 +170,49 @@ $$_________$$$$$$$$$$$$$$$__________________
 		count_the_keys += 1
 	def multi(self):
 		global urllist
-		for bine in self:
-			os.system("clear")
-			print Fore.MAGENTA + Style.BRIGHT + picz
-			print "FLEXING IN PROGRESS!!! WE'RE LOOKING AT: " + str(count_the_keys) + " REPS!!!"
-			test = parseSITE(requests.get(bine).text)
-			for liiine in test:
-				if liiine not in urllist:
-					urllist.append(liiine)
-	pool.apply_async(multi(postfunction))
+		test = parseSITE(requests.get(self).text)
+		for liiine in test:
+			if liiine not in urllist:
+				urllist.append(liiine)
+		return
+	os.system("clear")
+	print Fore.MAGENTA + Style.BRIGHT + picz
+	print "FLEXING IN PROGRESS!!! WE'RE LOOKING AT: " + str(count_the_keys) + " REPS!!!"
+	for bine in postfunction:
+		pool.apply_async(multi, (bine,))
 	pool.close()
 	pool.join()
-	freshemail = []
-	os.system("clear")
-	print "********************************************"
-	print "REPS COMPLETE! EXTRACTING EMAILS FROM LINKS!"
-	print "********************************************"
 	def secondmulti(self):
-		for linezz in self:
-			print linezz
-			try:
-				emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', requests.session().get(linezz).content)))
-			except:
-				print "COULD NOT RETRIEVE FROM LINK, NEED TO HIT THE GYM MORE!"
-				pass
+		global freshemail
+#		print self
+		try:
+			emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', requests.session().get(self).content)))
+		except:
+			print "COULD NOT RETRIEVE FROM LINK, NEED TO HIT THE GYM MORE!"
+			pass
+		try:
 			for email in emails:
 				if email not in freshemail:
 					freshemail.append(email)
 					file1 = open(fileoutput, 'a+')
 					file1.write(str(email) + "\n")
 					file1.close()
-	secondmulti(urllist)
+		except:
+			pass
+		return
+	more = 0
+	for zmore in urllist:
+		more += 1
+	os.system("clear")
+	print "********************************************"
+	print "REPS COMPLETE! EXTRACTING EMAILS FROM LINKS!"
+	print "Looks like " + str(more) + " URLS, this could take a while..."
+	print "********************************************"
+	for zebra in urllist:
+		zpool.apply_async(secondmulti, (zebra,))
+#		secondmulti(zebra)
+	zpool.close()
+	zpool.join()
 	print Fore.MAGENTA + Style.BRIGHT +"****Webite Emails Extracted...see %s***"%fileoutput
 	return extract_emails
 
@@ -243,7 +260,7 @@ while True:
         \/     \/              \/                   \/     \/ 
 
 """
-	choice1 = raw_input("\nPlease input \"w\" to extract from a website, \"f\" for a PDF file, \"r\" to rape and pillage a webite or \"q\" for quit?  ")
+	choice1 = raw_input("\nPlease input \"w\" to extract from a website, \"f\" for a PDF file, \"r\" to pillage a webite or \"q\" for quit?  ")
 	input = choice1.lower()
 	if input == 'w':
 		print Fore.MAGENTA + Style.BRIGHT +"\nYou chose to pull from webiste.\n"
@@ -281,7 +298,7 @@ _____________________    _____    _______   ____  __.
      \/            \/         \/         \/        \/ 
 """
 		print Fore.MAGENTA + Style.NORMAL +"\nYou chose to blast a website for all emails with " + Style.BRIGHT + "zero fucks.\n"
-		url = raw_input("Enter a URL to grab emails (e.g., google.com, no http or www): ")
+		url = raw_input("Enter a URL to grab emails (better to add http:// or https://): ")
 		output_path = raw_input("Please chose a output file location (e.g., C:\Users\<user>\Documents\): ")
 		output_filename = raw_input("Please chose a file name (e.g., emails.txt): ")
 		output = os.path.join(output_path,output_filename)
