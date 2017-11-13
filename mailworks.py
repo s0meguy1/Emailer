@@ -6,6 +6,8 @@ import os
 import time
 import smtplib
 import getpass
+from multiprocessing.pool import ThreadPool as Pool
+from multiprocessing import Process
 from itertools import *
 from bs4 import BeautifulSoup
 from email.mime.text import MIMEText
@@ -14,7 +16,7 @@ from email.mime.application import MIMEApplication
 from colorama import Fore, Back, Style
 from colorama import init 
 
-
+urllist = []
 def getEmailsPDF(fileinput,fileoutput):#get emails from PDF
 
 	file = open(fileinput,'rb')
@@ -52,6 +54,8 @@ def getEmailsWeb(url,fileoutput):#get emails from website
 	return extract_emails
 
 def RAGEgetEmailsWeb(url,fileoutput):#get emails from website
+	pool_size = 50 # your "parallelness - needs to be double the amount of coins"
+	pool = Pool(pool_size)
 	picz = """
 
 ______________$$$$$$$$$$____________________
@@ -91,16 +95,28 @@ $$_________$$$$$$$$$$$$$$$__________________
 	extract_emails = []
 	if url.startswith("http://"):
 		if url.split("/")[2].split(".")[0] == "www":
-			surl = url.split("/")[2].split(".")[1]#example
+			try:
+				surl = url.split("/")[2].split(".")[1] #example
+			except:
+				print "Error parsing URL!"
+				return
+		surl = url.split("/")[2].split(".")[0]
 		afull = url.split("/")[2]#www.example.com
 		durl = "http://" + url.split("/")[2]#http://www.example.com
 	elif url.startswith("https://"):
 		if url.split("/")[2].split(".")[0] == "www":
-			surl = url.split("/")[2].split(".")[1] #example
+			try:
+				surl = url.split("/")[2].split(".")[1] #example
+			except:
+				print "Error parsing URL!"
+				return
 		afull = url.split("/")[2] #www.example.com
 		durl = "https://" + url.split("/")[2] #https://www.example.com
 	else:
-		surl = url.split(".")[0]
+		try:
+			surl = url.split(".")[0]
+		except:
+			surl = url.split("/")[2].split(".")[0]
 		afull = url
 		durl = url
 	try:
@@ -139,45 +155,56 @@ $$_________$$$$$$$$$$$$$$$__________________
 			if not test.startswith("ftp"):
 				finaldata.append(test)
 		for testddd in finaldata:
-			if not testddd.endswith("pdf"):
+#			if not testddd.endswith("pdf"):
+#				efinaldata.append(testddd)
+			if not testddd.endswith(("gif", "png", "pdf", "PDF", "GIF", "PNG", "jpg", "JPG", "jpeg", "JPEG", "aac", "abw", "arc", "avi", "azw", "bin", "bz", "bz2", "csh", "css", "csv", "doc", "eot", "epub", "gif", "htm", "html", "ico", "ics", "jar", "jpeg", "jpg", "js", "json", "mid", "midi", "mpeg", "mpkg", "odp", "ods", "odt", "oga", "ogv", "ogx", "otf", "ppt", "rar", "rtf", "sh", "svg", "swf", "tar", "tif", "tiff", "ts", "ttf", "vsd", "wav", "weba", "webm", "webp", "woff", "woff2", "xhtml", "xls", "xlsx", "xml", "xul", "zip", "3gp", "3g2", "7z")):
 				efinaldata.append(testddd)
 		for testccc in efinaldata:
 			if testccc.startswith("http"):
 				eefinaldata.append(testccc)
 		return eefinaldata
 	postfunction = parseSITE(r.text)
-	urllist = []
+	count_the_keys = 0
+	for keyz in postfunction:
+		count_the_keys += 1
 #	foo = ['DOING CURLS!!!!', 'CRUSHING BANDWIDTH!!!', 'PILLAGING SITE!!!!']
-	for bine in postfunction:
-#		print(random.choice(foo))
-		os.system("clear")
-#		time.sleep(.5)
-		print Fore.MAGENTA + Style.BRIGHT + picz
-		print "FLEXING IN PROGRESS!!!"
-		test = parseSITE(requests.get(bine).text)
-		for liiine in test:
-			if liiine not in urllist:
-				urllist.append(liiine)
+	def multi(self):
+		global urllist
+		for bine in self:
+#			print(random.choice(foo))
+			os.system("clear")
+#			time.sleep(.5)
+			print Fore.MAGENTA + Style.BRIGHT + picz
+			print "FLEXING IN PROGRESS!!! WE'RE LOOKING AT: " + str(count_the_keys) + " REPS!!!"
+			test = parseSITE(requests.get(bine).text)
+			for liiine in test:
+				if liiine not in urllist:
+					urllist.append(liiine)
+	pool.apply_async(multi(postfunction))
+	pool.close()
+	pool.join()
 	freshemail = []
 	os.system("clear")
 	print "********************************************"
 	print "REPS COMPLETE! EXTRACTING EMAILS FROM LINKS!"
 	print "********************************************"
-	for linezz in urllist:
-		print linezz
-		try:
-			emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', requests.session().get(linezz).content)))
-		except:
-			print "COULD NOT RETRIEVE FROM LINK, NEED TO HIT THE GYM MORE!"
-			pass
+	def secondmulti(self):
+		for linezz in self:
+			print linezz
+			try:
+				emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', requests.session().get(linezz).content)))
+			except:
+				print "COULD NOT RETRIEVE FROM LINK, NEED TO HIT THE GYM MORE!"
+				pass
 #		for email in emails:
 #			extract_emails.append(str(email))
-		for email in emails:
-			if email not in freshemail:
-				freshemail.append(email)
-				file1 = open(fileoutput, 'a+')
-				file1.write(str(email) + "\n")
-				file1.close()
+			for email in emails:
+				if email not in freshemail:
+					freshemail.append(email)
+					file1 = open(fileoutput, 'a+')
+					file1.write(str(email) + "\n")
+					file1.close()
+	secondmulti(urllist)
 	print Fore.MAGENTA + Style.BRIGHT +"****Webite Emails Extracted...see %s***"%fileoutput
 	return extract_emails
 
