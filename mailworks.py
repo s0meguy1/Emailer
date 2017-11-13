@@ -53,7 +53,7 @@ def getEmailsWeb(url,fileoutput):#get emails from website
 	print Fore.MAGENTA + Style.BRIGHT +"****Webite Emails Extracted...see %s***"%fileoutput
 	return extract_emails
 
-def RAGEgetEmailsWeb(url,fileoutput):#get emails from website
+def RAGEgetEmailsWeb(url,fileoutput,zreps):#get emails from website
 	pool_size = 50 # max thread count
 	zpool_size = 100
 	pool = Pool(pool_size)
@@ -178,10 +178,11 @@ $$_________$$$$$$$$$$$$$$$__________________
 	os.system("clear")
 	print Fore.MAGENTA + Style.BRIGHT + picz
 	print "FLEXING IN PROGRESS!!! WE'RE LOOKING AT: " + str(count_the_keys) + " REPS!!!"
-	for bine in postfunction:
-		pool.apply_async(multi, (bine,))
-	pool.close()
-	pool.join()
+	if zreps == 2:
+		for bine in postfunction:
+			pool.apply_async(multi, (bine,))
+		pool.close()
+		pool.join()
 	def secondmulti(self):
 		global freshemail
 #		print self
@@ -200,19 +201,29 @@ $$_________$$$$$$$$$$$$$$$__________________
 		except:
 			pass
 		return
-	more = 0
-	for zmore in urllist:
-		more += 1
+	if zreps == 2:
+		more = 0
+		for zmore in urllist:
+			more += 1
 	os.system("clear")
 	print "********************************************"
 	print "REPS COMPLETE! EXTRACTING EMAILS FROM LINKS!"
-	print "Looks like " + str(more) + " URLS, this could take a while..."
+	if zreps == 2:
+		print "Looks like " + str(more) + " URLS, this could take a while..."
+	else:
+		print "Looks like " + str(count_the_keys) + " URLS, this shouldnt be too long..."
 	print "********************************************"
-	for zebra in urllist:
-		zpool.apply_async(secondmulti, (zebra,))
+	if zreps == 2:
+		for zebra in urllist:
+			zpool.apply_async(secondmulti, (zebra,))
 #		secondmulti(zebra)
-	zpool.close()
-	zpool.join()
+		zpool.close()
+		zpool.join()
+	else:
+		for lion in postfunction:
+			zpool.apply_async(secondmulti, (lion,))
+		zpool.close()
+		zpool.join()
 	print Fore.MAGENTA + Style.BRIGHT +"****Webite Emails Extracted...see %s***"%fileoutput
 	return extract_emails
 
@@ -301,8 +312,12 @@ _____________________    _____    _______   ____  __.
 		url = raw_input("Enter a URL to grab emails (better to add http:// or https://): ")
 		output_path = raw_input("Please chose a output file location (e.g., C:\Users\<user>\Documents\): ")
 		output_filename = raw_input("Please chose a file name (e.g., emails.txt): ")
+		reps = int(raw_input("1 or 2 levels deep?: "))
+		if reps > 2:
+			print "1 or 2 only dummy!"
+			break
 		output = os.path.join(output_path,output_filename)
-		got_emails = RAGEgetEmailsWeb(url,output)
+		got_emails = RAGEgetEmailsWeb(url,output,reps)
 #		sendEmails(got_emails)
 	elif input == 'q':
 		break
