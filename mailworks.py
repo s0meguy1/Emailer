@@ -91,7 +91,6 @@ $$_$$$$$$$hg$$$____$$$$$$$$__$$$____________
 $$$$__$$$$$$$$$$$$$$$$$$$$$$$$______________
 $$_________$$$$$$$$$$$$$$$__________________
 """
-#	print Fore.MAGENTA + Style.BRIGHT + picz
 	extract_emails = []
 	if url.startswith("http://"):
 		if url.split("/")[2].split(".")[0] == "www":
@@ -149,14 +148,11 @@ $$_________$$$$$$$$$$$$$$$__________________
 		for linef in dumpdata:
 			if linef.startswith("?"):
 				cleandata.append(durl + linef.strip())
-#		cleandata.append(url)
 		client = requests.session()
 		for test in cleandata:
 			if not test.startswith("ftp"):
 				finaldata.append(test)
 		for testddd in finaldata:
-#			if not testddd.endswith("pdf"):
-#				efinaldata.append(testddd)
 			if not testddd.endswith(("gif", "png", "pdf", "PDF", "GIF", "PNG", "jpg", "JPG", "jpeg", "JPEG", "aac", "abw", "arc", "avi", "azw", "bin", "bz", "bz2", "csh", "css", "csv", "doc", "eot", "epub", "gif", "htm", "html", "ico", "ics", "jar", "jpeg", "jpg", "js", "json", "mid", "midi", "mpeg", "mpkg", "odp", "ods", "odt", "oga", "ogv", "ogx", "otf", "ppt", "rar", "rtf", "sh", "svg", "swf", "tar", "tif", "tiff", "ts", "ttf", "vsd", "wav", "weba", "webm", "webp", "woff", "woff2", "xhtml", "xls", "xlsx", "xml", "xul", "zip", "3gp", "3g2", "7z")):
 				efinaldata.append(testddd)
 		for testccc in efinaldata:
@@ -167,13 +163,10 @@ $$_________$$$$$$$$$$$$$$$__________________
 	count_the_keys = 0
 	for keyz in postfunction:
 		count_the_keys += 1
-#	foo = ['DOING CURLS!!!!', 'CRUSHING BANDWIDTH!!!', 'PILLAGING SITE!!!!']
 	def multi(self):
 		global urllist
 		for bine in self:
-#			print(random.choice(foo))
 			os.system("clear")
-#			time.sleep(.5)
 			print Fore.MAGENTA + Style.BRIGHT + picz
 			print "FLEXING IN PROGRESS!!! WE'RE LOOKING AT: " + str(count_the_keys) + " REPS!!!"
 			test = parseSITE(requests.get(bine).text)
@@ -196,8 +189,6 @@ $$_________$$$$$$$$$$$$$$$__________________
 			except:
 				print "COULD NOT RETRIEVE FROM LINK, NEED TO HIT THE GYM MORE!"
 				pass
-#		for email in emails:
-#			extract_emails.append(str(email))
 			for email in emails:
 				if email not in freshemail:
 					freshemail.append(email)
