@@ -17,6 +17,10 @@ from colorama import Fore, Back, Style
 from colorama import init 
 freshemail = []
 urllist = []
+def regexChecker(stringObject):
+			dataset = re.compile(r'[A-Za-z.0-9_]{1,}@[A-Za-z.0-9_]{1,}(?:.edu|.mil|.com|.gov|.biz|.net|.io)', re.DOTALL)
+			result = re.findall(dataset, stringObject)
+			return result if len(result) >= 1 else None
 def getEmailsPDF(fileinput,fileoutput):#get emails from PDF
 
 	file = open(fileinput,'rb')
@@ -27,7 +31,7 @@ def getEmailsPDF(fileinput,fileoutput):#get emails from PDF
 	while i < numofpages:
 		page = parser.getPage(i)
 		textpage = page.extractText()
-		emails = re.findall(r'[a-zA-Z0-9\'-]{1,30}@\w{1,30}\.\w{1,3}', textpage)#seaching for email addresses
+		emails = regexChecker(textpage)#seaching for email addresses
 		file1 = open(fileoutput, 'a+')
 		for email in emails:
 			extract_emails.append(str(email))#ensures each email is added to the list
@@ -44,7 +48,7 @@ def getEmailsWeb(url,fileoutput):#get emails from website
 	client = requests.session()#requests.session().get(linez).content
 	page = client.get(url)
 	page_parsed = page.content
-	emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', page_parsed)))#seaching for email addresses
+	emails = regexChecker(page_parsed)#seaching for email addresses
 	file1 = open(fileoutput, 'a+')
 	for email in emails:
 		extract_emails.append(str(email))
@@ -185,9 +189,14 @@ $$_________$$$$$$$$$$$$$$$__________________
 		pool.join()
 	def secondmulti(self):
 		global freshemail
+		def RAGEregexChecker(stringObject):
+			dataset = re.compile(r'[A-Za-z.0-9_]{1,}@[A-Za-z.0-9_]{1,}(?:.edu|.mil|.com|.gov|.biz|.net|.io)', re.DOTALL)
+			result = re.findall(dataset, stringObject)
+			return result if len(result) >= 1 else None
 #		print self
 		try:
-			emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', requests.session().get(self).content)))
+			emails = RAGEregexChecker(requests.session().get(self).content)
+#			emails = sorted(set(re.findall(r'[a-zA-Z0-9\.\'-]{1,30}@\w{1,30}\.\w{1,3}', requests.session().get(self).content)))
 		except:
 			print "COULD NOT RETRIEVE FROM LINK, NEED TO HIT THE GYM MORE!"
 			pass
